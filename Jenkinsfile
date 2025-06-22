@@ -14,10 +14,10 @@ pipeline {
         DOCKER_PROJECT_NAME = 'ecomapp'
         APP_CONTAINER_NAME = 'product_app'
         DB_CONTAINER_NAME = 'mysql-ecommerce-prod'
-        DB_NAME = 'ecommerce_lp2_prod'
+        DB_NAME = 'laboratorio'
         DB_USER = 'root'
-        DB_PASSWORD = 'admin123'
-        REPO_URL = 'https://github.com/arlysanchez/ecommerce_Dockerizado.git'
+        DB_PASSWORD = 'leo321'
+        REPO_URL = 'https://github.com/Leoncio-Sanchez/lab-clinico.git'
     }
 
     stages {
