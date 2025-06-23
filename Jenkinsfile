@@ -9,7 +9,7 @@ pipeline {
     environment {
         DOCKER_PROJECT_NAME = 'ecomapp'
         APP_CONTAINER_NAME = 'laboratorio_app'
-        DB_CONTAINER_NAME = 'mariadb-lab-prod'  // 🟢 Corregido
+        DB_CONTAINER_NAME = 'mariadb-lab-prod'
         DB_NAME = 'laboratorio_bd'
         DB_USER = 'laboratorio'
         DB_PASSWORD = 'fadic123'
@@ -22,7 +22,7 @@ pipeline {
                 timeout(time: 10, unit: 'MINUTES') {
                     echo '🔄 === INICIO: CLONACIÓN DEL REPOSITORIO ==='
                     cleanWs()
-                    git branch: 'main', url: "${REPO_URL}" // 🟢 Corregido a main
+                    git branch: 'main', url: "${REPO_URL}"
 
                     echo '📋 === VERIFICACIÓN DE ARCHIVOS SQL ==='
                     sh 'ls -la docker/'
@@ -90,16 +90,22 @@ pipeline {
                     script {
                         echo '1️⃣ Limpiando despliegue anterior...'
                         try {
-                            sh "docker-compose -p ${DOCKER_PROJECT_NAME} down -v --remove-orphans"
+                            sh "docker-compose -p ${DOCKER_PROJECT_NAME} down -v --remove-orphans || true"
+                            sh "docker network rm lab_net || true"
                         } catch (Exception e) {
-                            echo "⚠️ Advertencia: ${e.getMessage()}"
+                            echo "⚠️ Advertencia al desmontar: ${e.getMessage()}"
                         }
+
+                        echo '🧹 1.1 Eliminando contenedor conflictivo si existe...'
+                        sh "docker rm -f ${DB_CONTAINER_NAME} || true"
 
                         echo '2️⃣ Construyendo y levantando servicios...'
                         sh "docker-compose -p ${DOCKER_PROJECT_NAME} up -d --build"
 
-                        echo '3️⃣ Inicializando base de datos...'
+                        echo '3️⃣ Esperando que la base de datos se inicialice...'
                         sleep(30)
+
+                        echo '3.1 Ejecutando estructura de la base de datos...'
                         sh "docker exec -i ${DB_CONTAINER_NAME} mysql -u${DB_USER} -p${DB_PASSWORD} ${DB_NAME} < ../docker/estructura.sql"
 
                         echo '4️⃣ Verificando estructura de la base de datos...'
@@ -107,6 +113,7 @@ pipeline {
 
                         echo '5️⃣ Esperando inicio de la aplicación...'
                         sleep(30)
+
                         echo '6️⃣ Mostrando logs de la aplicación:'
                         sh "docker logs --tail 200 ${APP_CONTAINER_NAME}"
                     }
