@@ -1,0 +1,63 @@
+# .github/workflows/deploy.yml
+# 🚀 CI/CD para despliegue local con Self-Hosted Runner en proyecto lab-clinico
+
+name: Deploy Lab Clinico Locally
+
+on:
+  push:
+    branches: [ "main" ]  # o "master", depende de tu rama principal
+  workflow_dispatch:       # Permite ejecutar manualmente desde GitHub
+
+env:
+  DOCKER_PROJECT_NAME: 'labapp'
+  APP_CONTAINER_NAME: 'lab-clinico-app'
+  DB_CONTAINER_NAME: 'mariadb-lab-prod'
+  DB_NAME: 'laboratorio_bd'
+  DB_USER: 'laboratorio'
+  DB_PASSWORD: 'fadic123'
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy Lab Clinico
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Deploy with Docker Compose
+        run: |
+          echo "🚀 Despliegue de Lab Clínico iniciando..."
+
+          # Entramos al directorio del docker-compose.yml si está dentro de una carpeta
+          cd . # o 'cd docker' si lo tienes en otra carpeta
+
+          echo "🧹 Deteniendo cualquier despliegue anterior..."
+          docker-compose -p ${{ env.DOCKER_PROJECT_NAME }} down -v --remove-orphans || echo "⚠️ No se encontró despliegue previo."
+
+          echo "🏗️ Levantando nueva versión..."
+          docker-compose -p ${{ env.DOCKER_PROJECT_NAME }} up -d --build
+
+          echo "⏳ Esperando 30 segundos a que la DB se estabilice..."
+          sleep 30
+
+          echo "💾 Ejecutando script SQL si es necesario..."
+          docker exec -i ${{ env.DB_CONTAINER_NAME }} mysql -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }} ${{ env.DB_NAME }} < ./docker/estructura.sql
+
+          echo "📋 Estado actual de los contenedores:"
+          docker-compose -p ${{ env.DOCKER_PROJECT_NAME }} ps
+
+          echo "📝 Logs de la aplicación:"
+          docker logs --tail 100 ${{ env.APP_CONTAINER_NAME }}
+
+          echo "✅ Despliegue completo."
