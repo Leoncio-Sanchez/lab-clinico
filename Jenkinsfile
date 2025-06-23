@@ -116,7 +116,18 @@ pipeline {
                         sleep(30)
 
                         echo '6️⃣ Mostrando logs de la aplicación:'
-                        sh "docker logs --tail 200 ${APP_CONTAINER_NAME}"
+
+                        def exists = sh(
+                            script: "docker ps -a --format '{{.Names}}' | grep -w ${APP_CONTAINER_NAME} || true",
+                            returnStdout: true
+                        ).trim()
+
+                        if (exists) {
+                            sh "docker logs --tail 200 ${APP_CONTAINER_NAME}"
+                        } else {
+                            echo "⚠️ El contenedor '${APP_CONTAINER_NAME}' no está disponible. Mostrando contenedores activos:"
+                            sh "docker ps -a"
+                        }
                     }
                 }
                 echo '✅ === FIN: DESPLIEGUE COMPLETADO ==='
