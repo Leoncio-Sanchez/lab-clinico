@@ -12,7 +12,7 @@ pipeline {
         DB_CONTAINER_NAME = 'mariadb_jenkins'
         DB_NAME = 'laboratorio_bd'
         DB_USER = 'laboratorio'
-        DB_PASSWORD = 'leo321'
+        DB_PASSWORD = 'fadic123' // ✅ Corregido según docker-compose.yml
         REPO_URL = 'https://github.com/Leoncio-Sanchez/lab-clinico.git'
     }
 
@@ -100,7 +100,7 @@ pipeline {
 
                         echo '3️⃣ Inicializando base de datos...'
                         sleep(30)
-                        sh "docker exec -i ${DB_CONTAINER_NAME} mysql -u${DB_USER} -p${DB_PASSWORD} ${DB_NAME} < estructura.sql"
+                        sh "docker exec -i ${DB_CONTAINER_NAME} mysql -u${DB_USER} -p${DB_PASSWORD} ${DB_NAME} < ../docker/estructura.sql" // ✅ Ruta corregida
 
                         echo '4️⃣ Verificando estructura de la base de datos...'
                         sh "docker exec ${DB_CONTAINER_NAME} mysql -u${DB_USER} -p${DB_PASSWORD} -e 'USE ${DB_NAME}; SHOW TABLES;'"
@@ -128,4 +128,3 @@ pipeline {
         }
     }
 }
-
