@@ -22,7 +22,7 @@ pipeline {
                 timeout(time: 10, unit: 'MINUTES') {
                     echo '🔄 === INICIO: CLONACIÓN DEL REPOSITORIO ==='
                     cleanWs()
-                    git branch: 'master', url: "${REPO_URL}"
+                    git branch: 'main', url: "${REPO_URL}"
 
                     echo '📋 === VERIFICACIÓN DE ARCHIVOS SQL ==='
                     sh 'ls -la docker/'
