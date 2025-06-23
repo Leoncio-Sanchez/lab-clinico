@@ -1,27 +1,50 @@
 version: '3.8'
+
 services:
-  mariadb:
+  db:
     image: mariadb:10.11
-    container_name: mariadb_jenkins
+    container_name: mariadb-lab-prod
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: fadic123
       MYSQL_DATABASE: laboratorio_bd
-      MYSQL_USER: laboratorio
+      MYSQL_ROOT_PASSWORD: fadic123
       MYSQL_PASSWORD: fadic123
-    ports:
-      - "3307:3306"
+      MYSQL_USER: laboratorio
     volumes:
+      - mariadb_data:/var/lib/mysql
       - ./docker/estructura.sql:/docker-entrypoint-initdb.d/estructura.sql
+    ports:
+      - '3307:3306'
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-ulaboratorio", "-pfadic123"]
+      timeout: 20s
+      retries: 10
+      start_period: 40s
+    networks:
+      - backend
 
   app:
-    build: .
-    container_name: laboratorio_app
+    build:
+      context: .         # raíz del proyecto donde está el Dockerfile
+      dockerfile: Dockerfile
+    container_name: lab-clinico-app
     depends_on:
-      - mariadb  # ✅ nombre del servicio, NO el container_name
+      db:
+        condition: service_healthy
     ports:
-      - "8080:8080"
+      - '8080:8080'
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mariadb:3306/laboratorio_bd  # ✅ igual
+      SPRING_DATASOURCE_URL: jdbc:mysql://db/laboratorio_bd?serverTimezone=America/Lima&useSSL=false&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: laboratorio
       SPRING_DATASOURCE_PASSWORD: fadic123
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    restart: unless-stopped
+    networks:
+      - backend
+
+volumes:
+  mariadb_data:
+
+networks:
+  backend:
+    name: lab_net
