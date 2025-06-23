@@ -2,7 +2,7 @@ version: '3.8'
 services:
   mariadb:
     image: mariadb:10.11
-    container_name: mariadb
+    container_name: mariadb_jenkins
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: fadic123
@@ -10,7 +10,7 @@ services:
       MYSQL_USER: laboratorio
       MYSQL_PASSWORD: fadic123
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - ./docker/estructura.sql:/docker-entrypoint-initdb.d/estructura.sql
 
@@ -18,10 +18,10 @@ services:
     build: .
     container_name: laboratorio_app
     depends_on:
-      - mariadb
+      - mariadb  # ✅ nombre del servicio, NO el container_name
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mariadb:3306/laboratorio_bd
+      SPRING_DATASOURCE_URL: jdbc:mysql://mariadb:3306/laboratorio_bd  # ✅ igual
       SPRING_DATASOURCE_USERNAME: laboratorio
       SPRING_DATASOURCE_PASSWORD: fadic123
