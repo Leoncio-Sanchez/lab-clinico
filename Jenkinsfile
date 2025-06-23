@@ -96,8 +96,9 @@ pipeline {
                             echo "⚠️ Advertencia al desmontar: ${e.getMessage()}"
                         }
 
-                        echo '🧹 1.1 Eliminando contenedor conflictivo si existe...'
+                        echo '🧹 Eliminando contenedores conflictivos si existen...'
                         sh "docker rm -f ${DB_CONTAINER_NAME} || true"
+                        sh "docker rm -f ${APP_CONTAINER_NAME} || true"
 
                         echo '2️⃣ Construyendo y levantando servicios...'
                         sh "docker-compose -p ${DOCKER_PROJECT_NAME} up -d --build"
