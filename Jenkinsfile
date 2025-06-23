@@ -9,10 +9,10 @@ pipeline {
     environment {
         DOCKER_PROJECT_NAME = 'ecomapp'
         APP_CONTAINER_NAME = 'laboratorio_app'
-        DB_CONTAINER_NAME = 'mariadb_jenkins'
+        DB_CONTAINER_NAME = 'mariadb-lab-prod'  // 🟢 Corregido
         DB_NAME = 'laboratorio_bd'
         DB_USER = 'laboratorio'
-        DB_PASSWORD = 'fadic123' // ✅ Corregido según docker-compose.yml
+        DB_PASSWORD = 'fadic123'
         REPO_URL = 'https://github.com/Leoncio-Sanchez/lab-clinico.git'
     }
 
@@ -22,7 +22,7 @@ pipeline {
                 timeout(time: 10, unit: 'MINUTES') {
                     echo '🔄 === INICIO: CLONACIÓN DEL REPOSITORIO ==='
                     cleanWs()
-                    git branch: 'main', url: "${REPO_URL}"
+                    git branch: 'main', url: "${REPO_URL}" // 🟢 Corregido a main
 
                     echo '📋 === VERIFICACIÓN DE ARCHIVOS SQL ==='
                     sh 'ls -la docker/'
@@ -100,7 +100,7 @@ pipeline {
 
                         echo '3️⃣ Inicializando base de datos...'
                         sleep(30)
-                        sh "docker exec -i ${DB_CONTAINER_NAME} mysql -u${DB_USER} -p${DB_PASSWORD} ${DB_NAME} < ../docker/estructura.sql" // ✅ Ruta corregida
+                        sh "docker exec -i ${DB_CONTAINER_NAME} mysql -u${DB_USER} -p${DB_PASSWORD} ${DB_NAME} < ../docker/estructura.sql"
 
                         echo '4️⃣ Verificando estructura de la base de datos...'
                         sh "docker exec ${DB_CONTAINER_NAME} mysql -u${DB_USER} -p${DB_PASSWORD} -e 'USE ${DB_NAME}; SHOW TABLES;'"
