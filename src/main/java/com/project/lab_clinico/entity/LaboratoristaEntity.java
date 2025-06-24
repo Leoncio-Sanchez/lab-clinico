@@ -10,8 +10,9 @@ import java.util.Date;
 @Table(name = "laboratorista")
 public class LaboratoristaEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+@Column(name = "id_laboratorista")
+private Long id;
     @JsonIgnoreProperties({"medico", "laboratorista", "paciente"})
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_usuario")
