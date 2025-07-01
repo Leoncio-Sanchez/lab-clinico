@@ -25,7 +25,7 @@ services:
 
   app:
     build:
-      context: .         # raíz del proyecto donde está el Dockerfile
+      context: .
       dockerfile: Dockerfile
     container_name: lab-clinico-app
     depends_on:
@@ -47,4 +47,5 @@ volumes:
 
 networks:
   backend:
+    external: true
     name: lab_net
