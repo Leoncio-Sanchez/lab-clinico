@@ -5,8 +5,8 @@ name: Deploy Lab Clinico Locally
 
 on:
   push:
-    branches: [ "main" ]  # o "master", depende de tu rama principal
-  workflow_dispatch:       # Permite ejecutar manualmente desde GitHub
+    branches: [ "main" ]
+  workflow_dispatch:
 
 env:
   DOCKER_PROJECT_NAME: 'labapp'
@@ -25,34 +25,34 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Checkout repository
+      - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: ☕ Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with Maven
+      - name: ⚙ Build with Maven
         run: mvn clean package -DskipTests
 
-      - name: 📊 Análisis con SonarQube
+      - name: 📊 Run SonarQube analysis
+        working-directory: ${{ github.workspace }}
         run: |
+          echo "📡 Iniciando análisis SonarQube..."
+          ls -la # Verifica dónde estás parado
           mvn sonar:sonar \
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} \
             -Dsonar.host.url=${{ env.SONAR_HOST_URL }} \
             -Dsonar.login=${{ env.SONAR_TOKEN }}
 
-      - name: Deploy with Docker Compose
+      - name: 🚀 Deploy with Docker Compose
         run: |
           echo "🚀 Despliegue de Lab Clínico iniciando..."
 
-          # Entramos al directorio del docker-compose.yml si está dentro de una carpeta
-          cd . # o 'cd docker' si lo tienes en otra carpeta
-
-          echo "🧹 Deteniendo cualquier despliegue anterior..."
+          cd . # Si tu docker-compose.yml está en la raíz
           docker-compose -p ${{ env.DOCKER_PROJECT_NAME }} down -v --remove-orphans || echo "⚠️ No se encontró despliegue previo."
 
           echo "🏗️ Levantando nueva versión..."
