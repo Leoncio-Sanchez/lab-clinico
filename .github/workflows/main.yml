@@ -15,10 +15,13 @@ env:
   DB_NAME: 'laboratorio_bd'
   DB_USER: 'laboratorio'
   DB_PASSWORD: 'fadic123'
+  SONAR_PROJECT_KEY: 'lab-clinico'
+  SONAR_HOST_URL: 'http://localhost:9000'
+  SONAR_TOKEN: 'squ_d78e52b62a37123fe30f2d235b436cfed8af656a'
 
 jobs:
   build-and-deploy:
-    name: Build and Deploy Lab Clinico
+    name: Build, Analyze and Deploy Lab Clinico
     runs-on: self-hosted
 
     steps:
@@ -35,6 +38,13 @@ jobs:
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
+      - name: 📊 Análisis con SonarQube
+        run: |
+          mvn sonar:sonar \
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} \
+            -Dsonar.host.url=${{ env.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ env.SONAR_TOKEN }}
+
       - name: Deploy with Docker Compose
         run: |
           echo "🚀 Despliegue de Lab Clínico iniciando..."
@@ -43,9 +53,9 @@ jobs:
           cd . # o 'cd docker' si lo tienes en otra carpeta
 
           echo "🧹 Deteniendo cualquier despliegue anterior..."
-          docker-compose -p ${{ env.DOCKER_PROJECT_NAME }} down -v --remove-orphans || echo "⚠ No se encontró despliegue previo."
+          docker-compose -p ${{ env.DOCKER_PROJECT_NAME }} down -v --remove-orphans || echo "⚠️ No se encontró despliegue previo."
 
-          echo "🏗 Levantando nueva versión..."
+          echo "🏗️ Levantando nueva versión..."
           docker-compose -p ${{ env.DOCKER_PROJECT_NAME }} up -d --build
 
           echo "⏳ Esperando 30 segundos a que la DB se estabilice..."
