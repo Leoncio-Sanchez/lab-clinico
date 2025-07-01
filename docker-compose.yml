@@ -21,7 +21,7 @@ services:
       retries: 10
       start_period: 40s
     networks:
-      - backend
+      - lab_net
 
   app:
     build:
@@ -40,12 +40,11 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
     restart: unless-stopped
     networks:
-      - backend
+      - lab_net
 
 volumes:
   mariadb_data:
 
 networks:
-  backend:
+  lab_net:
     external: true
-    name: lab_net
